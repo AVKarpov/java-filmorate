@@ -36,8 +36,6 @@ public class UserController {
             throw new ValidationException("Пользователь с таким id не найден");
         }
         validate(user);
-//        if (user.getName() == null || user.getName().isBlank())
-//            user.setName(user.getLogin());
         users.replace(user.getId(), user);
         log.info("Обновлен пользователь: {}", user);
         return user;
