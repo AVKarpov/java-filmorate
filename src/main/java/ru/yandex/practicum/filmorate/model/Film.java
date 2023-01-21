@@ -9,12 +9,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Film {
-    private int id;
+    private long id;
     @NotBlank
     private String name;
     @Size(min = 1, max = 200)
@@ -23,4 +25,9 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private long duration; //minutes
+    private Set<Long> likes = new HashSet<>();
+
+    public void addLike(Long userId) {
+        this.likes.add(userId);
+    }
 }
