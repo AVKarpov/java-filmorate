@@ -20,8 +20,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    private final static int MAX_COUNT_FILM_SORT_SIZE = 10;
-
     public List<Film> getAllFilms() {
         return filmStorage.getAllFilms();
     }
@@ -53,7 +51,7 @@ public class FilmService {
             log.info("Добавление лайка. Пользователь с id = {} не найден", userId);
             throw new NoSuchElementException(String.format("Пользователь с id = %d не найден", userId));
         }
-        film.addLike(id);
+        film.getLikes().add(id);
     }
 
     // удаление лайка
@@ -75,7 +73,7 @@ public class FilmService {
         log.info("Получение списка популярных фильмов count = {}", count);
         return filmStorage.getAllFilms().stream()
                 .sorted(Comparator.comparing(film -> film.getLikes().size(), Comparator.reverseOrder()))
-                .limit(count != null ? count : MAX_COUNT_FILM_SORT_SIZE)
+                .limit(count)
                 .collect(Collectors.toList());
     }
 

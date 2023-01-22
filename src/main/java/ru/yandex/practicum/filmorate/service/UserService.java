@@ -39,8 +39,8 @@ public class UserService {
     //добавление в друзья
     public void addFriend(Long id, Long friendId) {
         if (userStorage.getUserById(id) != null && userStorage.getUserById(friendId) != null) {
-            userStorage.getUserById(id).addFriend(friendId);
-            userStorage.getUserById(friendId).addFriend(id);
+            userStorage.getUserById(id).getFriends().add(friendId);
+            userStorage.getUserById(friendId).getFriends().add(id);
         }
     }
 

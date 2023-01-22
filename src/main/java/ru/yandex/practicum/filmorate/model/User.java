@@ -21,7 +21,4 @@ public class User {
     private LocalDate birthday;
     private Set<Long> friends = new HashSet<>();
 
-    public void addFriend(Long friendId) {
-        this.friends.add(friendId);
-    }
 }
