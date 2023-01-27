@@ -1,7 +1,7 @@
 # java-filmorate
 
 DB ER-structure of Filmorate project
-![Filmorate ER-structure](Filmorate_diagram.png)
+![Filmorate ER-structure](https://github.com/AVKarpov/java-filmorate/raw/main/Filmorate_diagram.PNG)
 
 Query examples:
 1. Get all films:  
