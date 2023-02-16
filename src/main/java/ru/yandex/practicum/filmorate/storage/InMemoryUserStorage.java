@@ -58,7 +58,27 @@ public class InMemoryUserStorage implements UserStorage {
         users.remove(id);
     }
 
-    public void validate(User user) {
+    @Override
+    public void addFriend(Long id, Long friendId) {
+
+    }
+
+    @Override
+    public void removeFriend(Long id, Long friendId) {
+
+    }
+
+    @Override
+    public List<User> getUserNonConfirmedFriends(Long id) {
+        return null;
+    }
+
+    @Override
+    public List<User> getUserCommonNonConfirmedFriends(Long id, Long otherId) {
+        return null;
+    }
+
+    public static void validate(User user) {
         if (user != null) {
             //электронная почта не может быть пустой и должна содержать символ @
             if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {

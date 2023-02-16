@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.RatingMPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Comparator;
+import javax.validation.ValidationException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,8 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+
+    private static final LocalDate FILM_BIRTHDAY = LocalDate.of(1895,12,28);
 
     public List<Film> getAllFilms() {
         return filmStorage.getAllFilms();
@@ -29,10 +33,12 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
+        validate(film);
         return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
+        validate(film);
         return filmStorage.updateFilm(film);
     }
 
@@ -51,7 +57,8 @@ public class FilmService {
             log.info("Добавление лайка. Пользователь с id = {} не найден", userId);
             throw new NoSuchElementException(String.format("Пользователь с id = %d не найден", userId));
         }
-        film.getLikes().add(id);
+
+        filmStorage.addLike(id, userId);
     }
 
     // удаление лайка
@@ -65,16 +72,52 @@ public class FilmService {
             log.info("Удаление лайка. Пользователь с id = {} не найден", userId);
             throw new NoSuchElementException(String.format("Пользователь с id = %d не найден", userId));
         }
-        film.getLikes().remove(userId);
+
+        filmStorage.deleteLike(id, userId);
     }
 
-    // вывод 10 наиболее популярных фильмов по количеству лайков
+    // вывод наиболее популярных фильмов по количеству лайков
     public List<Film> getPopularFilms(Integer count) {
-        log.info("Получение списка популярных фильмов count = {}", count);
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparing(film -> film.getLikes().size(), Comparator.reverseOrder()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
+    }
+
+    public List<Genre> getAllGenres() {
+        return filmStorage.getAllGenres();
+    }
+
+    public Genre getGenreById(int id) {
+        return filmStorage.getGenreById(id);
+    }
+
+    public List<RatingMPA> getAllRatingMpa() {
+        return filmStorage.getAllRatingMpa();
+    }
+
+    public RatingMPA getRatingMpaById(int id) {
+       return filmStorage.getRatingMpaById(id);
+    }
+
+    private void validate(Film film) {
+        //название не может быть пустым
+        if (film.getName() == null || film.getName().isBlank()) {
+            log.info("Название фильма пустое: {}", film);
+            throw new ValidationException("Название фильма не может быть пустым");
+        }
+        //максимальная длина описания — 200 символов
+        if (film.getDescription().length() > 200) {
+            log.info("Превышена максимальная длина описания - 200 символов");
+            throw new ValidationException("Максимальная длина описания не должна превышать 200 символов");
+        }
+        //продолжительность фильма должна быть положительной
+        if (film.getDuration() <= 0) {
+            log.info("Продолжительность фильма меньше 0");
+            throw new ValidationException("Продолжительность фильма должна быть положительной");
+        }
+        //дата релиза — не раньше 28 декабря 1895 года
+        if (film.getReleaseDate().isBefore(FILM_BIRTHDAY)) {
+            log.info("Указана некорректная дата релиза фильма: {}", film.getReleaseDate());
+            throw new ValidationException("Дата релиза не корректная");
+        }
     }
 
 }

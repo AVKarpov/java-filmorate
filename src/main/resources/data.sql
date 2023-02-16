@@ -1,0 +1,38 @@
+DELETE FROM FILMLIKES;
+ALTER TABLE FILMLIKES ALTER COLUMN id RESTART WITH 1;
+DELETE FROM FILMGENRE;
+ALTER TABLE FILMGENRE ALTER COLUMN id RESTART WITH 1;
+DELETE FROM FILMS;
+ALTER TABLE FILMS ALTER COLUMN film_id RESTART WITH 1;
+DELETE FROM FRIENDS;
+ALTER TABLE FRIENDS ALTER COLUMN friendship_id RESTART WITH 1;
+DELETE FROM USERS;
+ALTER TABLE USERS ALTER COLUMN user_id RESTART WITH 1;
+DELETE FROM RATINGMPA;
+ALTER TABLE RATINGMPA ALTER COLUMN rating_id RESTART WITH 1;
+DELETE FROM GENRE;
+ALTER TABLE GENRE ALTER COLUMN genre_id RESTART WITH 1;
+
+INSERT INTO RATINGMPA (title)
+VALUES ('G'); --у фильма нет возрастных ограничений
+INSERT INTO RATINGMPA (title)
+VALUES ('PG'); --детям рекомендуется смотреть фильм с родителями
+INSERT INTO RATINGMPA (title)
+VALUES ('PG-13'); --детям до 13 лет просмотр не желателен
+INSERT INTO RATINGMPA (title)
+VALUES ('R'); --лицам до 17 лет просматривать фильм можно только в присутствии взрослого
+INSERT INTO RATINGMPA (title)
+VALUES ('NC-17'); --лицам до 18 лет просмотр запрещён
+
+INSERT INTO GENRE (name)
+VALUES ('Комедия');
+INSERT INTO GENRE (name)
+VALUES ('Драма');
+INSERT INTO GENRE (name)
+VALUES ('Мультфильм');
+INSERT INTO GENRE (name)
+VALUES ('Триллер');
+INSERT INTO GENRE (name)
+VALUES ('Документальный');
+INSERT INTO GENRE (name)
+VALUES ('Боевик');
