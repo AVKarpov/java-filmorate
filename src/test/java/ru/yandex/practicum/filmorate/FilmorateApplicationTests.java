@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.dao.GenreDAO;
-import ru.yandex.practicum.filmorate.dao.RatingMpaDAO;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.RatingMpaStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FilmoRateApplicationTests {
 	private final UserService userService;
 	private final FilmService filmService;
-	private final GenreDAO genreDAO;
-	private final RatingMpaDAO ratingMpaDAO;
+	private final GenreStorage genreDao;
+	private final RatingMpaStorage ratingMpaStorageDao;
 
 //---USERS---
 	User user1 = User.builder()
@@ -261,66 +261,66 @@ class FilmoRateApplicationTests {
 
 	@Test
 	void testGetAllGenres() {
-		assertEquals(6, genreDAO.getAllGenres().size());
+		assertEquals(6, genreDao.getAllGenres().size());
 	}
 
 	@Test
 	void testGetGenreById() {
-		assertEquals("Драма", genreDAO.getGenreById(2).getName());
+		assertEquals("Драма", genreDao.getGenreById(2).getName());
 	}
 
 	@Test
 	void testGetFilmGenres() {
-		Genre genre1 = genreDAO.getGenreById(1);
-		Genre genre2 = genreDAO.getGenreById(3);
+		Genre genre1 = genreDao.getGenreById(1);
+		Genre genre2 = genreDao.getGenreById(3);
 		List<Genre> genres = new ArrayList<>();
 		genres.add(genre1);
 		genres.add(genre2);
-		genreDAO.addGenresToFilm((1L), genres);
+		genreDao.addGenresToFilm((1L), genres);
 		assertEquals(genres, filmService.getFilmById(1L).getGenres());
 	}
 
 	@Test
 	void testAddGenresToFilm() {
-		Genre genre = genreDAO.getGenreById(1);
+		Genre genre = genreDao.getGenreById(1);
 		List<Genre> genres = new ArrayList<>();
 		genres.add(genre);
-		genreDAO.addGenresToFilm((2L), genres);
+		genreDao.addGenresToFilm((2L), genres);
 		assertEquals(genres, filmService.getFilmById(2L).getGenres());
 	}
 
 	@Test
 	void testUpdateGenresAtFilm() {
-		Genre genre1 = genreDAO.getGenreById(1);
+		Genre genre1 = genreDao.getGenreById(1);
 		List<Genre> genres = new ArrayList<>();
 		genres.add(genre1);
-		genreDAO.addGenresToFilm((3L), genres);
+		genreDao.addGenresToFilm((3L), genres);
 		assertEquals(genres, filmService.getFilmById(3L).getGenres());
 
-		genres.add(genreDAO.getGenreById(2));
-		genreDAO.addGenresToFilm((3L), genres);
+		genres.add(genreDao.getGenreById(2));
+		genreDao.addGenresToFilm((3L), genres);
 		assertEquals(genres, filmService.getFilmById(3L).getGenres());
 	}
 
 	@Test
 	void testDeleteGenresFromFilm() {
-		Genre genre = genreDAO.getGenreById(1);
+		Genre genre = genreDao.getGenreById(1);
 		List<Genre> genres = new ArrayList<>();
 		genres.add(genre);
-		genreDAO.addGenresToFilm((1L), genres);
+		genreDao.addGenresToFilm((1L), genres);
 		assertEquals(1, filmService.getFilmById(1L).getGenres().size());
-		genreDAO.deleteGenresFromFilm(1L);
+		genreDao.deleteGenresFromFilm(1L);
 		assertEquals(0, filmService.getFilmById(1L).getGenres().size());
 	}
 
 	@Test
 	void testGetAllRatingMpa() {
-		assertEquals(5, ratingMpaDAO.getAllRatingMPA().size());
+		assertEquals(5, ratingMpaStorageDao.getAllRatingMPA().size());
 	}
 
 	@Test
 	void testGetRatingMpaById() {
-		assertEquals("PG", ratingMpaDAO.getRatingMpaById(2).getName());
+		assertEquals("PG", ratingMpaStorageDao.getRatingMpaById(2).getName());
 	}
 
 	@Test

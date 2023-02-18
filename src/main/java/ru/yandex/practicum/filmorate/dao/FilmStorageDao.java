@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.RatingMPA;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
@@ -20,10 +20,10 @@ import java.util.*;
 @RequiredArgsConstructor
 @Primary
 @Slf4j
-public class FilmStorageDAO implements FilmStorage {
+public class FilmStorageDao implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final RatingMpaDAO ratingMpaDAO;
-    private final GenreDAO genreDAO;
+    private final RatingMpaStorageDao ratingMpaStorageDAO;
+    private final GenreStorageDao genreStorageDAO;
 
     @Override
     public List<Film> getAllFilms() {
@@ -42,7 +42,7 @@ public class FilmStorageDAO implements FilmStorage {
     }
 
     private Set<Long> getFilmLikes(Long id) {
-        String sqlQuery = "SELECT user_id FROM FilmLikes WHERE film_id = ?";
+        String sqlQuery = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToUserId, id));
     }
 
@@ -52,16 +52,16 @@ public class FilmStorageDAO implements FilmStorage {
 
     public List<Film> getPopularFilms(int count) {
         log.info("Получение списка популярных фильмов count = {}", count);
-        String sqlQuery = "SELECT f.FILM_ID," +
-                "f.TITLE," +
-                "f.DESCRIPTION," +
-                "f.RELEASE_DATE," +
-                "f.DURATION," +
-                "f.RATING_ID " +
+        String sqlQuery = "SELECT f.film_id," +
+                "f.title," +
+                "f.description," +
+                "f.release_date," +
+                "f.duration," +
+                "f.rating_id " +
                 "FROM films AS f " +
-                "LEFT OUTER JOIN FilmLikes AS fl ON f.FILM_ID = fl.FILM_ID " +
-                "GROUP BY f.FILM_ID " +
-                "ORDER BY COUNT(fl.FILM_ID) DESC " +
+                "LEFT OUTER JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.film_id) DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
     }
@@ -76,14 +76,14 @@ public class FilmStorageDAO implements FilmStorage {
         values.put("description", film.getDescription());
         values.put("release_date", film.getReleaseDate());
         values.put("duration", film.getDuration());
-        if (ratingMpaDAO.validateRatingMpaId(film))
+        if (ratingMpaStorageDAO.validateRatingMpaId(film))
             values.put("rating_id", film.getMpa().getId());
 
         long id = simpleJdbcInsert.executeAndReturnKey(values).longValue();
         log.info("Добавлен фильм c id = {}", id);
 
         if (film.getGenres() != null && film.getGenres().size() > 0) {
-            genreDAO.addGenresToFilm(id, film.getGenres());
+            genreStorageDAO.addGenresToFilm(id, film.getGenres());
         }
 
         return getFilmById(id);
@@ -107,7 +107,7 @@ public class FilmStorageDAO implements FilmStorage {
         log.info("Обновлен фильм: {}", film);
 
         if (film.getGenres() != null) {
-            genreDAO.updateGenresAtFilm(film.getId(), film.getGenres());
+            genreStorageDAO.updateGenresAtFilm(film.getId(), film.getGenres());
         }
 
         return getFilmById(film.getId());
@@ -123,30 +123,30 @@ public class FilmStorageDAO implements FilmStorage {
     }
 
     public void addLike(Long id, Long userId) {
-        String sqlQuery = "INSERT INTO FilmLikes (film_id, user_id) " +
+        String sqlQuery = "INSERT INTO film_likes (film_id, user_id) " +
                 "VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
     }
 
     public void deleteLike(Long id, Long userId) {
-        String sqlQuery = "DELETE FROM FilmLikes WHERE film_id = ? AND user_id = ?";
+        String sqlQuery = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
     }
 
     public List<Genre> getAllGenres() {
-        return genreDAO.getAllGenres();
+        return genreStorageDAO.getAllGenres();
     }
 
     public Genre getGenreById(int id) {
-        return genreDAO.getGenreById(id);
+        return genreStorageDAO.getGenreById(id);
     }
 
-    public List<RatingMPA> getAllRatingMpa() {
-        return ratingMpaDAO.getAllRatingMPA();
+    public List<RatingMpa> getAllRatingMpa() {
+        return ratingMpaStorageDAO.getAllRatingMPA();
     }
 
-    public RatingMPA getRatingMpaById(int id) {
-        return ratingMpaDAO.getRatingMpaById(id);
+    public RatingMpa getRatingMpaById(int id) {
+        return ratingMpaStorageDAO.getRatingMpaById(id);
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -157,8 +157,8 @@ public class FilmStorageDAO implements FilmStorage {
                 .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .likes(getFilmLikes(resultSet.getLong("film_id")))
-                .genres(genreDAO.getFilmGenres(resultSet.getLong("film_id")))
-                .mpa(ratingMpaDAO.getRatingMpaById(resultSet.getInt("rating_id")))
+                .genres(genreStorageDAO.getFilmGenres(resultSet.getLong("film_id")))
+                .mpa(ratingMpaStorageDAO.getRatingMpaById(resultSet.getInt("rating_id")))
                 .build();
     }
 

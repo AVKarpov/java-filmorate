@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.ResultSet;
@@ -18,10 +17,10 @@ import java.util.*;
 @Component
 @Primary
 @Slf4j
-public class UserStorageDAO implements UserStorage {
+public class UserStorageDao implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public UserStorageDAO(JdbcTemplate jdbcTemplate){
+    public UserStorageDao(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -46,7 +45,7 @@ public class UserStorageDAO implements UserStorage {
     }
 
     private Set<Friendship> getUserFriendsId(Long id) {
-        String sqlQuery = "SELECT friend_id, status FROM Friends WHERE user_id = ? ";
+        String sqlQuery = "SELECT friend_id, status FROM friends WHERE user_id = ? ";
         return new HashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToFriendship, id));
     }
 
@@ -57,7 +56,6 @@ public class UserStorageDAO implements UserStorage {
 
     @Override
     public User addUser(User user) {
-        InMemoryUserStorage.validate(user);
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("user_id");
@@ -73,7 +71,6 @@ public class UserStorageDAO implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        InMemoryUserStorage.validate(user);
         String sqlQuery = "UPDATE users SET " +
                 "email = ?, login = ?, name = ?, birthdate = ? " +
                 "WHERE user_id = ?";
@@ -100,8 +97,8 @@ public class UserStorageDAO implements UserStorage {
     }
 
     public List<User> getUserNonConfirmedFriends(Long id) {
-        String sqlQuery = "SELECT * FROM Users WHERE user_id IN (" +
-                "SELECT friend_id FROM Friends WHERE user_id = ? )";
+        String sqlQuery = "SELECT * FROM users WHERE user_id IN (" +
+                "SELECT friend_id FROM friends WHERE user_id = ? )";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
 
@@ -111,10 +108,10 @@ public class UserStorageDAO implements UserStorage {
         if (user != null && friend != null) {
             user.getFriends().add(new Friendship(friendId, false));
         }
-        String sqlQueryUpdateStatus = "UPDATE Friends SET status = TRUE WHERE user_id = ? AND friend_id = ?";
+        String sqlQueryUpdateStatus = "UPDATE friends SET status = TRUE WHERE user_id = ? AND friend_id = ?";
         if (jdbcTemplate.update(sqlQueryUpdateStatus, friendId, id) == 0) {
             //запрос на добавление в друзья пользователь с friendId ранее не отправлял, добавляем новую запись
-            String sqlQueryAddFriend = "INSERT INTO Friends (user_id, friend_id) VALUES (?, ?)";
+            String sqlQueryAddFriend = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
             jdbcTemplate.update(sqlQueryAddFriend, id, friendId);
 
         }
@@ -126,7 +123,7 @@ public class UserStorageDAO implements UserStorage {
         if (user != null && friend != null) {
             user.getFriends().removeIf(data -> data.getId() == friendId);
         }
-        String sqlQuery = "DELETE FROM Friends WHERE user_id = ? AND friend_id = ?";
+        String sqlQuery = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         if (jdbcTemplate.update(sqlQuery, id, friendId) == 0) {
             throw new NoSuchElementException("DELETE: Не удалось удалить друга с friendId = " + friendId
                     + " у пользователя с id = " + id);
@@ -135,8 +132,8 @@ public class UserStorageDAO implements UserStorage {
     }
 
     public List<User> getUserCommonNonConfirmedFriends(Long id, Long otherId) {
-        String sqlQuery = "SELECT * FROM Users WHERE user_id IN (" +
-                "SELECT friend_id FROM Friends WHERE user_id IN (?,?)" +
+        String sqlQuery = "SELECT * FROM users WHERE user_id IN (" +
+                "SELECT friend_id FROM friends WHERE user_id IN (?,?)" +
                 "GROUP BY friend_id HAVING COUNT(friend_id) = 2)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }

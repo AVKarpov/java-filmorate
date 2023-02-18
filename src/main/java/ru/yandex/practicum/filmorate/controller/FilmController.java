@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.RatingMPA;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -76,13 +76,13 @@ public class FilmController {
 
     //GET /mpa
     @GetMapping(value = "/mpa")
-    public List<RatingMPA> getAllRatingMpa() {
+    public List<RatingMpa> getAllRatingMpa() {
         return filmService.getAllRatingMpa();
     }
 
     //GET /mpa/{id}
     @GetMapping(value = "/mpa/{id}")
-    public RatingMPA getRatingMpaById(@PathVariable int id) {
+    public RatingMpa getRatingMpaById(@PathVariable int id) {
         return filmService.getRatingMpaById(id);
     }
 }

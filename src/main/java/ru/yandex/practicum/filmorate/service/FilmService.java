@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.RatingMPA;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -89,11 +89,11 @@ public class FilmService {
         return filmStorage.getGenreById(id);
     }
 
-    public List<RatingMPA> getAllRatingMpa() {
+    public List<RatingMpa> getAllRatingMpa() {
         return filmStorage.getAllRatingMpa();
     }
 
-    public RatingMPA getRatingMpaById(int id) {
+    public RatingMpa getRatingMpaById(int id) {
        return filmStorage.getRatingMpaById(id);
     }
 
